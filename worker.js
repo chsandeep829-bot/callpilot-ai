@@ -1,7 +1,7 @@
 const headers = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
   "Content-Type": "application/json"
 };
 
@@ -16,20 +16,13 @@ export default {
       return new Response(null, { status: 204, headers });
     }
 
-    if (url.pathname === "/api/health") {
-      return json({
-        ok: true,
-        service: "CallPilot AI",
-        mode: "simulation"
-      });
+    if (url.pathname === "/api/health" && request.method === "GET") {
+      return json({ ok: true, service: "CallPilot AI", provider: "Groq" });
     }
 
-    if (url.pathname === "/api/chat" &&
-        request.method === "POST") {
-      if (!env.OMNIROUTE_API_KEY) {
-        return json({
-          error: "OMNIROUTE_API_KEY secret is missing"
-        }, 503);
+    if (url.pathname === "/api/chat" && request.method === "POST") {
+      if (!env.GROQ_API_KEY) {
+        return json({ error: "GROQ_API_KEY secret is missing" }, 503);
       }
 
       let body;
@@ -43,31 +36,27 @@ export default {
         return json({ error: "Message is required" }, 400);
       }
 
-      const base = (
-        env.OMNIROUTE_BASE_URL || "http://127.0.0.1:20128"
-      ).replace(/\/+$/, "");
+      const model = env.GROQ_MODEL || "openai/gpt-oss-20b";
 
       try {
         const response = await fetch(
-          base + "/v1/chat/completions",
+          "https://api.groq.com/openai/v1/chat/completions",
           {
             method: "POST",
             headers: {
-              "Authorization": "Bearer " + env.OMNIROUTE_API_KEY,
+              "Authorization": "Bearer " + env.GROQ_API_KEY,
               "Content-Type": "application/json"
             },
             body: JSON.stringify({
-              model: env.OMNIROUTE_MODEL || "YOUR_MODEL_ID",
+              model,
               messages: [
                 {
                   role: "system",
                   content:
-                    "You are a polite AI assistant for consent-based " +
-                    "calling campaigns. Respect opt-outs and never pressure " +
-                    "people. Campaign purpose: " +
+                    "You are a polite AI assistant for consent-based calling campaigns. " +
+                    "Respect opt-outs and never pressure people. Campaign purpose: " +
                     String(body.purpose || "General assistance") +
-                    ". Respond in " +
-                    String(body.language || "English") + "."
+                    ". Respond in " + String(body.language || "English") + "."
                 },
                 {
                   role: "user",
@@ -82,20 +71,21 @@ export default {
 
         if (!response.ok) {
           return json({
-            error: "OmniRoute request failed",
-            details: data.error?.message || data.message ||
-              "Check the API URL and model ID"
+            error: "Groq API request failed",
+            status: response.status,
+            details: data.error?.message || data.message || "Check the Groq API key and model ID"
           }, 502);
         }
 
         return json({
           reply: data.choices?.[0]?.message?.content || "",
-          model: data.model || "unknown"
+          model: data.model || model,
+          provider: "Groq"
         });
       } catch {
         return json({
-          error: "Cannot connect to OmniRoute",
-          details: "Check that its API URL is publicly reachable"
+          error: "Cannot connect to Groq API",
+          details: "Check network access and try again"
         }, 502);
       }
     }
