@@ -12,7 +12,8 @@ input,textarea,select,button{box-sizing:border-box;width:100%;padding:12px;margi
 button{background:#819dff;color:#081020;font-weight:bold}
 label{display:block;margin-top:10px;color:#b9c5df}
 small{color:#a8b4ce}
-#result{white-space:pre-wrap;overflow-wrap:anywhere}
+#result,#activity{white-space:pre-wrap;overflow-wrap:anywhere}
+.notice{color:#ffdca8}
 </style>
 </head>
 <body>
@@ -38,18 +39,19 @@ I will only contact consenting people and respect opt-outs.</label>
 <h2>AI connection test</h2>
 <label>Test message</label>
 <textarea id="message">Say hello and introduce yourself briefly.</textarea>
-<button id="test">Test OmniRoute</button>
+<button id="test">Test Groq AI</button>
 <pre id="result">Ready.</pre>
 </section>
 <section>
 <h2>Contact simulation</h2>
-<label>Contact name</label><input id="contact" placeholder="Contact name">
+<p class="notice">Simulation only. This does not place a real telephone call.</p>
+<label>Contact name</label><input id="contact" placeholder="Test contact name">
 <label>Phone number</label><input id="phone" placeholder="+91...">
 <label><input id="consent" type="checkbox" style="width:auto">
 Explicit consent confirmed</label>
 <label><input id="optout" type="checkbox" style="width:auto">
 Contact opted out</label>
-<button id="simulate">Simulate only</button>
+<button id="simulate">Run consent check (simulation only)</button>
 <pre id="activity">No simulated calls yet.</pre>
 </section>
 <small>This starter does not place telephone calls. Add a compliant phone provider separately before any real calling. Do not enter sensitive personal data here.</small>
@@ -66,7 +68,7 @@ $("save").onclick=()=>{
  $("saved").textContent="Campaign saved in this page session.";
 };
 $("test").onclick=async()=>{
- $("result").textContent="Testing...";
+ $("result").textContent="Testing Groq...";
  try{
   const r=await fetch("/api/chat",{
    method:"POST",
@@ -83,15 +85,18 @@ $("test").onclick=async()=>{
 };
 $("simulate").onclick=()=>{
  if(!$("policy").checked||!$("name").value.trim()){
-  $("activity").textContent="Save a campaign and confirm the consent policy first.";return;
+  $("activity").textContent="Blocked: enter a campaign name and confirm the consent policy first.";return;
  }
  if(!$("contact").value.trim()||!$("phone").value.trim()){
-  $("activity").textContent="Enter a contact name and phone number.";return;
+  $("activity").textContent="Blocked: enter a test contact name and phone number.";return;
  }
- if(!$("consent").checked||$("optout").checked){
-  $("activity").textContent="Blocked: consent is missing or the contact opted out.";return;
+ if($("optout").checked){
+  $("activity").textContent="Blocked: this contact is marked as opted out. Do not contact them. If this status is incorrect, verify the contact's request and update the record through your authorized consent-management process.";return;
  }
- $("activity").textContent="SIMULATION ONLY — "+$("contact").value+
+ if(!$("consent").checked){
+  $("activity").textContent="Blocked: explicit consent has not been confirmed. Confirm documented permission before proceeding.";return;
+ }
+ $("activity").textContent="CONSENT CHECK PASSED — simulation only for "+$("contact").value+
  " ("+$("phone").value+"). No telephone call was placed.";
 };
 </script>
