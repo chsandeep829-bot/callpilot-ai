@@ -114,6 +114,7 @@ function startVoice(){
   if(wakeMatch(finalText)){
    const after=finalText.replace(/\bhey\s+sandeep\b/i,"").replace(/హే\s*సందీప్|హేయ్\s*సందీప్/gi,"").trim();
    waitingForQuestion=true;
+   if(after) waitingForQuestion=false;
    const prompt=after?"I'm listening.":"Yes, I'm listening. What can I help you with?";
    setStatus("Wake phrase detected. "+(after?"Sending your question…":"Ask your question now."),"live");
    if(!after)say(prompt);
