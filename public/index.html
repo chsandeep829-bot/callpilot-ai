@@ -3,102 +3,162 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>CallPilot AI</title>
+<meta name="theme-color" content="#0b1020">
+<title>CallPilot AI — Hey Sandeep</title>
 <style>
-body{margin:0;background:#0b1020;color:#edf2ff;font:16px system-ui}
-main{max-width:850px;margin:auto;padding:22px}
-section{background:#151e32;border:1px solid #2c3954;border-radius:16px;padding:18px;margin:16px 0}
-input,textarea,select,button{box-sizing:border-box;width:100%;padding:12px;margin:6px 0;border-radius:9px;border:1px solid #35415d;background:#0c1426;color:white}
-button{background:#819dff;color:#081020;font-weight:bold}
-label{display:block;margin-top:10px;color:#b9c5df}
-small{color:#a8b4ce}
-#result,#activity{white-space:pre-wrap;overflow-wrap:anywhere}
-.notice{color:#ffdca8}
+:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#0b1020;color:#edf2ff;font:16px system-ui,sans-serif}main{max-width:850px;margin:auto;padding:20px}header{padding:12px 0 4px}h1{margin:0;font-size:clamp(28px,6vw,40px)}.sub{color:#aab8d6}.panel{background:#151e32;border:1px solid #2c3954;border-radius:18px;padding:18px;margin:16px 0}input,textarea,select,button{font:inherit;width:100%;padding:12px;margin:6px 0;border-radius:10px;border:1px solid #35415d;background:#0c1426;color:white}textarea{min-height:90px;resize:vertical}button{background:#819dff;color:#081020;font-weight:750;border:0;cursor:pointer}button.secondary{background:#273653;color:#edf2ff;border:1px solid #435574}button:disabled{opacity:.55}label{display:block;margin-top:12px;color:#c3cee5}small,.muted{color:#a8b4ce}.status{padding:12px;border-radius:12px;background:#0c1426;border:1px solid #35415d;white-space:pre-wrap}.status.live{border-color:#7cdbad;color:#b7f6d4}.status.warn{border-color:#f0c36d;color:#ffe0a3}#reply{white-space:pre-wrap;overflow-wrap:anywhere;min-height:56px}.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.check{display:flex;gap:9px;align-items:flex-start}.check input{width:auto;margin-top:5px}.pill{display:inline-block;border:1px solid #435574;border-radius:99px;padding:4px 9px;color:#c3cee5;font-size:12px}@media(max-width:520px){main{padding:14px}.actions{grid-template-columns:1fr}.panel{padding:14px}}
 </style>
 </head>
 <body>
 <main>
-<h1>CallPilot AI</h1>
-<p>Consent-aware AI calling workspace</p>
-<section>
-<h2>Campaign setup</h2>
-<label>Campaign name</label>
-<input id="name" placeholder="Appointment reminders">
-<label>Purpose and AI instructions</label>
-<textarea id="purpose" placeholder="Explain the legitimate purpose"></textarea>
-<label>Language</label>
-<select id="language">
-<option>Telugu</option><option>English</option><option>Hindi</option>
-</select>
-<label><input id="policy" type="checkbox" style="width:auto">
-I will only contact consenting people and respect opt-outs.</label>
-<button id="save">Save campaign locally</button>
-<p id="saved"></p>
+<header>
+<span class="pill">VOICE ASSISTANT · BETA</span>
+<h1>Hey Sandeep</h1>
+<p class="sub">A hands-free Telugu and English AI assistant, powered by Groq.</p>
+</header>
+<section class="panel">
+<h2>1. Set up your assistant</h2>
+<label for="language">Assistant language</label>
+<select id="language"><option value="Telugu">Telugu</option><option value="English">English</option><option value="Hindi">Hindi</option></select>
+<label for="business">About you / your business (used to answer questions)</label>
+<textarea id="business" placeholder="Example: My name is Sandeep. I help customers with Airtel Payments Bank account-opening information in Gudivada. Share only public business information."></textarea>
+<p class="muted">This information stays in this page unless you send a question to the AI. Don't enter passwords, API keys, or private customer data.</p>
+<button class="secondary" id="save">Save settings on this device</button>
+<p id="saved" class="muted"></p>
 </section>
-<section>
-<h2>AI connection test</h2>
-<label>Test message</label>
-<textarea id="message">Say hello and introduce yourself briefly.</textarea>
-<button id="test">Test Groq AI</button>
-<pre id="result">Ready.</pre>
+<section class="panel">
+<h2>2. Start voice mode</h2>
+<p>Tap start and allow microphone access. Say <b>“Hey Sandeep”</b>, wait for the wake confirmation, then ask your question. Say <b>“Stop listening”</b> to turn voice mode off.</p>
+<div id="status" class="status">Not listening. Tap Start listening to begin.</div>
+<div class="actions">
+<button id="start">Start listening</button>
+<button id="stop" class="secondary" disabled>Stop listening</button>
+</div>
+<label class="check"><input id="speak" type="checkbox" checked><span>Speak AI answers aloud</span></label>
+<label class="check"><input id="showTranscript" type="checkbox" checked><span>Show recognized speech and replies on screen</span></label>
 </section>
-<section>
-<h2>Contact simulation</h2>
-<p class="notice">Simulation only. This does not place a real telephone call.</p>
-<label>Contact name</label><input id="contact" placeholder="Test contact name">
-<label>Phone number</label><input id="phone" placeholder="+91...">
-<label><input id="consent" type="checkbox" style="width:auto">
-Explicit consent confirmed</label>
-<label><input id="optout" type="checkbox" style="width:auto">
-Contact opted out</label>
-<button id="simulate">Run consent check (simulation only)</button>
-<pre id="activity">No simulated calls yet.</pre>
+<section class="panel">
+<h2>Conversation</h2>
+<p class="muted">You can also type a question if voice recognition isn't supported on your browser.</p>
+<label for="typed">Your message</label>
+<textarea id="typed" placeholder="Ask in Telugu or English…"></textarea>
+<button id="send">Ask AI</button>
+<h3>Latest reply</h3>
+<div id="reply" class="status">Your assistant's response will appear here.</div>
+<div id="transcript" class="muted"></div>
 </section>
-<small>This starter does not place telephone calls. Add a compliant phone provider separately before any real calling. Do not enter sensitive personal data here.</small>
+<section class="panel">
+<h2>Browser support and privacy</h2>
+<p class="muted">Voice recognition depends on your browser and may send speech to the browser's speech service. Keep this page open and your screen awake for the best chance of hearing the wake phrase. A normal website cannot reliably listen while your phone is locked or the browser is in the background; that needs a native Android app with additional permissions. This prototype does not place phone calls.</p>
+</section>
 </main>
 <script>
 const $=id=>document.getElementById(id);
-$("save").onclick=()=>{
- if(!$("name").value.trim()||!$("purpose").value.trim()){
-  $("saved").textContent="Enter a campaign name and purpose.";return;
- }
- if(!$("policy").checked){
-  $("saved").textContent="Confirm the consent policy first.";return;
- }
- $("saved").textContent="Campaign saved in this page session.";
-};
-$("test").onclick=async()=>{
- $("result").textContent="Testing Groq...";
+const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+let recognition=null, listening=false, waitingForQuestion=false, busy=false, restartTimer=null;
+function setStatus(message,kind=""){ $("status").className="status "+kind; $("status").textContent=message; }
+function voiceLocale(){return $("language").value==="Telugu"?"te-IN":$("language").value==="Hindi"?"hi-IN":"en-IN";}
+function say(text){
+ if(!$("speak").checked||!("speechSynthesis" in window)) return;
+ window.speechSynthesis.cancel();
+ const utterance=new SpeechSynthesisUtterance(text);
+ utterance.lang=voiceLocale();
+ utterance.rate=1; utterance.pitch=1;
+ window.speechSynthesis.speak(utterance);
+}
+function wakeMatch(text){return /\bhey\s+sandeep\b|హే\s*సందీప్|హేయ్\s*సందీప్/i.test(text);}
+function stopVoice(){
+ listening=false; waitingForQuestion=false; busy=false;
+ if(restartTimer) clearTimeout(restartTimer);
+ if(recognition){recognition.onend=null;try{recognition.stop()}catch(e){} recognition=null;}
+ if("speechSynthesis" in window) window.speechSynthesis.cancel();
+ $("start").disabled=false;$("stop").disabled=true;
+ setStatus("Voice mode stopped. Tap Start listening when you're ready.");
+}
+async function askAI(message){
+ if(!message.trim()) return;
+ busy=true;setStatus("Thinking…");
+ $("reply").textContent="Thinking…";
  try{
-  const r=await fetch("/api/chat",{
-   method:"POST",
-   headers:{"Content-Type":"application/json"},
-   body:JSON.stringify({
-    purpose:$("purpose").value,
-    language:$("language").value,
-    message:$("message").value
-   })
-  });
-  const d=await r.json();
-  $("result").textContent=JSON.stringify(d,null,2);
- }catch(e){$("result").textContent="Request failed: "+e.message;}
+  const response=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({purpose:$("business").value||"Friendly personal voice assistant",language:$("language").value,message})});
+  const data=await response.json();
+  if(!response.ok) throw new Error(data.details||data.error||("HTTP "+response.status));
+  const answer=data.reply||"Sorry, I couldn't generate a response.";
+  $("reply").textContent=answer;
+  if($("showTranscript").checked)$("transcript").textContent="You: "+message+"\nAssistant: "+answer;
+  say(answer);
+  setStatus(listening?"Answer ready. Say “Hey Sandeep” for another question.":"Answer ready.");
+ }catch(error){
+  const message="AI request failed: "+error.message;
+  $("reply").textContent=message;setStatus(message,"warn");
+ }finally{busy=false;}
+}
+function startVoice(){
+ if(!SpeechRecognition){setStatus("Speech recognition isn't supported in this browser. Try the latest Chrome on Android, or type your question below.","warn");return;}
+ if(listening)return;
+ listening=true;waitingForQuestion=false;
+ $("start").disabled=true;$("stop").disabled=false;
+ recognition=new SpeechRecognition();
+ recognition.lang=voiceLocale();recognition.continuous=true;recognition.interimResults=true;recognition.maxAlternatives=1;
+ recognition.onstart=()=>setStatus("Listening for “Hey Sandeep”…","live");
+ recognition.onresult=(event)=>{
+  let finalText="";
+  for(let i=event.resultIndex;i<event.results.length;i++){
+   const text=event.results[i][0].transcript.trim();
+   if(event.results[i].isFinal) finalText+=" "+text;
+  }
+  finalText=finalText.trim();
+  if(!finalText)return;
+  if($("showTranscript").checked)$("transcript").textContent="Heard: "+finalText;
+  if(/\bstop listening\b|ఆపేయి|వినడం ఆపు/i.test(finalText)){stopVoice();return;}
+  if(wakeMatch(finalText)){
+   const after=finalText.replace(/\bhey\s+sandeep\b/i,"").replace(/హే\s*సందీప్|హేయ్\s*సందీప్/gi,"").trim();
+   waitingForQuestion=true;
+   const prompt=after?"I'm listening.":"Yes, I'm listening. What can I help you with?";
+   setStatus("Wake phrase detected. "+(after?"Sending your question…":"Ask your question now."),"live");
+   if(!after)say(prompt);
+   else askAI(after);
+   return;
+  }
+  if(waitingForQuestion&&!busy){waitingForQuestion=false;askAI(finalText);}
+ };
+ recognition.onerror=(event)=>{
+  if(event.error==="not-allowed"||event.error==="service-not-allowed"){setStatus("Microphone permission denied. Allow microphone access in your browser settings.","warn");stopVoice();}
+  else if(event.error!=="no-speech"&&event.error!=="aborted")setStatus("Speech recognition issue: "+event.error+". Keep the page open and try again.","warn");
+ };
+ recognition.onend=()=>{
+  recognition=null;
+  if(listening){restartTimer=setTimeout(()=>{if(listening&&!busy)startRecognitionAgain();else if(listening){restartTimer=setTimeout(()=>{if(listening)startRecognitionAgain()},800);}},500);}
+ };
+ try{recognition.start()}catch(e){setStatus("Couldn't start microphone. Tap Start listening again.","warn");stopVoice();}
+}
+function startRecognitionAgain(){
+ if(!listening||!SpeechRecognition)return;
+ recognition=new SpeechRecognition();recognition.lang=voiceLocale();recognition.continuous=true;recognition.interimResults=true;recognition.maxAlternatives=1;
+ // Reuse the same handlers by stopping and restarting through a small shared setup.
+ recognition.onstart=()=>setStatus(waitingForQuestion?"Listening for your question…":"Listening for “Hey Sandeep”…","live");
+ recognition.onresult=(event)=>{
+  let text="";
+  for(let i=event.resultIndex;i<event.results.length;i++)if(event.results[i].isFinal)text+=" "+event.results[i][0].transcript.trim();
+  text=text.trim();if(!text)return;
+  if($("showTranscript").checked)$("transcript").textContent="Heard: "+text;
+  if(/\bstop listening\b|ఆపేయి|వినడం ఆపు/i.test(text)){stopVoice();return;}
+  if(wakeMatch(text)){const after=text.replace(/\bhey\s+sandeep\b/i,"").replace(/హే\s*సందీప్|హేయ్\s*సందీప్/gi,"").trim();waitingForQuestion=true;if(after){waitingForQuestion=false;askAI(after)}else{setStatus("Wake phrase detected. Ask your question now.","live");say("I'm listening. What can I help you with?")}return;}
+  if(waitingForQuestion&&!busy){waitingForQuestion=false;askAI(text)}
+ };
+ recognition.onerror=(event)=>{if(event.error==="not-allowed"||event.error==="service-not-allowed"){setStatus("Microphone permission denied. Allow microphone access in your browser settings.","warn");stopVoice()}};
+ recognition.onend=()=>{recognition=null;if(listening){restartTimer=setTimeout(()=>{if(listening&&!busy)startRecognitionAgain();else if(listening)restartTimer=setTimeout(()=>{if(listening)startRecognitionAgain()},800)},500)}};
+ try{recognition.start()}catch(e){restartTimer=setTimeout(()=>{if(listening)startRecognitionAgain()},1000)}
+}
+$("start").onclick=startVoice;
+$("stop").onclick=stopVoice;
+$("send").onclick=()=>askAI($("typed").value);
+$("save").onclick=()=>{
+ const settings={language:$("language").value,business:$("business").value};
+ try{localStorage.setItem("callpilotVoiceSettings",JSON.stringify(settings));$("saved").textContent="Settings saved on this device."}catch(e){$("saved").textContent="Couldn't save settings in this browser."}
 };
-$("simulate").onclick=()=>{
- if(!$("policy").checked||!$("name").value.trim()){
-  $("activity").textContent="Blocked: enter a campaign name and confirm the consent policy first.";return;
- }
- if(!$("contact").value.trim()||!$("phone").value.trim()){
-  $("activity").textContent="Blocked: enter a test contact name and phone number.";return;
- }
- if($("optout").checked){
-  $("activity").textContent="Blocked: this contact is marked as opted out. Do not contact them. If this status is incorrect, verify the contact's request and update the record through your authorized consent-management process.";return;
- }
- if(!$("consent").checked){
-  $("activity").textContent="Blocked: explicit consent has not been confirmed. Confirm documented permission before proceeding.";return;
- }
- $("activity").textContent="CONSENT CHECK PASSED — simulation only for "+$("contact").value+
- " ("+$("phone").value+"). No telephone call was placed.";
-};
+try{const settings=JSON.parse(localStorage.getItem("callpilotVoiceSettings")||"{}");if(settings.language)$("language").value=settings.language;if(settings.business)$("business").value=settings.business}catch(e){}
+$("language").addEventListener("change",()=>{if(listening){stopVoice();setStatus("Language changed. Tap Start listening to resume.")}});
 </script>
 </body>
 </html>
