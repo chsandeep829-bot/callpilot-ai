@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CallPilot AI</title>
+<style>
+body{margin:0;background:#0b1020;color:#edf2ff;font:16px system-ui}
+main{max-width:850px;margin:auto;padding:22px}
+section{background:#151e32;border:1px solid #2c3954;border-radius:16px;padding:18px;margin:16px 0}
+input,textarea,select,button{box-sizing:border-box;width:100%;padding:12px;margin:6px 0;border-radius:9px;border:1px solid #35415d;background:#0c1426;color:white}
+button{background:#819dff;color:#081020;font-weight:bold}
+label{display:block;margin-top:10px;color:#b9c5df}
+small{color:#a8b4ce}
+#result{white-space:pre-wrap;overflow-wrap:anywhere}
+</style>
+</head>
+<body>
+<main>
+<h1>CallPilot AI</h1>
+<p>Consent-aware AI calling workspace</p>
+<section>
+<h2>Campaign setup</h2>
+<label>Campaign name</label>
+<input id="name" placeholder="Appointment reminders">
+<label>Purpose and AI instructions</label>
+<textarea id="purpose" placeholder="Explain the legitimate purpose"></textarea>
+<label>Language</label>
+<select id="language">
+<option>Telugu</option><option>English</option><option>Hindi</option>
+</select>
+<label><input id="policy" type="checkbox" style="width:auto">
+I will only contact consenting people and respect opt-outs.</label>
+<button id="save">Save campaign locally</button>
+<p id="saved"></p>
+</section>
+<section>
+<h2>AI connection test</h2>
+<label>Test message</label>
+<textarea id="message">Say hello and introduce yourself briefly.</textarea>
+<button id="test">Test OmniRoute</button>
+<pre id="result">Ready.</pre>
+</section>
+<section>
+<h2>Contact simulation</h2>
+<label>Contact name</label><input id="contact" placeholder="Contact name">
+<label>Phone number</label><input id="phone" placeholder="+91...">
+<label><input id="consent" type="checkbox" style="width:auto">
+Explicit consent confirmed</label>
+<label><input id="optout" type="checkbox" style="width:auto">
+Contact opted out</label>
+<button id="simulate">Simulate only</button>
+<pre id="activity">No simulated calls yet.</pre>
+</section>
+<small>This starter does not place telephone calls. Add a compliant phone provider separately before any real calling. Do not enter sensitive personal data here.</small>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+$("save").onclick=()=>{
+ if(!$("name").value.trim()||!$("purpose").value.trim()){
+  $("saved").textContent="Enter a campaign name and purpose.";return;
+ }
+ if(!$("policy").checked){
+  $("saved").textContent="Confirm the consent policy first.";return;
+ }
+ $("saved").textContent="Campaign saved in this page session.";
+};
+$("test").onclick=async()=>{
+ $("result").textContent="Testing...";
+ try{
+  const r=await fetch("/api/chat",{
+   method:"POST",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({
+    purpose:$("purpose").value,
+    language:$("language").value,
+    message:$("message").value
+   })
+  });
+  const d=await r.json();
+  $("result").textContent=JSON.stringify(d,null,2);
+ }catch(e){$("result").textContent="Request failed: "+e.message;}
+};
+$("simulate").onclick=()=>{
+ if(!$("policy").checked||!$("name").value.trim()){
+  $("activity").textContent="Save a campaign and confirm the consent policy first.";return;
+ }
+ if(!$("contact").value.trim()||!$("phone").value.trim()){
+  $("activity").textContent="Enter a contact name and phone number.";return;
+ }
+ if(!$("consent").checked||$("optout").checked){
+  $("activity").textContent="Blocked: consent is missing or the contact opted out.";return;
+ }
+ $("activity").textContent="SIMULATION ONLY — "+$("contact").value+
+ " ("+$("phone").value+"). No telephone call was placed.";
+};
+</script>
+</body>
+</html>

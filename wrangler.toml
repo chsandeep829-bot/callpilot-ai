@@ -1,0 +1,11 @@
+name = "callpilot-ai"
+main = "worker.js"
+compatibility_date = "2026-10-22"
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
+run_worker_first = ["/api/*"]
+
+[vars]
+OMNIROUTE_MODEL = "YOUR_MODEL_ID"
