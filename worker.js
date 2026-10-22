@@ -17,7 +17,7 @@ export default {
     }
 
     if (url.pathname === "/api/health" && request.method === "GET") {
-      return json({ ok: true, service: "CallPilot AI", provider: "Groq" });
+      return json({ ok: true, service: "CallPilot AI", provider: "Groq", mode: "Hey Sandeep voice assistant" });
     }
 
     if (url.pathname === "/api/chat" && request.method === "POST") {
@@ -32,43 +32,43 @@ export default {
         return json({ error: "Invalid JSON" }, 400);
       }
 
-      if (!body.message) {
+      if (!body.message || typeof body.message !== "string") {
         return json({ error: "Message is required" }, 400);
       }
 
       const model = env.GROQ_MODEL || "openai/gpt-oss-20b";
+      const language = String(body.language || "English").slice(0, 30);
+      const business = String(body.purpose || "").slice(0, 2000);
 
       try {
-        const response = await fetch(
-          "https://api.groq.com/openai/v1/chat/completions",
-          {
-            method: "POST",
-            headers: {
-              "Authorization": "Bearer " + env.GROQ_API_KEY,
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              model,
-              messages: [
-                {
-                  role: "system",
-                  content:
-                    "You are a polite AI assistant for consent-based calling campaigns. " +
-                    "Respect opt-outs and never pressure people. Campaign purpose: " +
-                    String(body.purpose || "General assistance") +
-                    ". Respond in " + String(body.language || "English") + "."
-                },
-                {
-                  role: "user",
-                  content: String(body.message).slice(0, 4000)
-                }
-              ]
-            })
-          }
-        );
+        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": "Bearer " + env.GROQ_API_KEY,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            model,
+            messages: [
+              {
+                role: "system",
+                content:
+                  "You are Hey Sandeep, a friendly, helpful voice assistant. " +
+                  "Answer naturally and concisely because your replies may be spoken aloud. " +
+                  "The user may speak Telugu, English, or Hindi; respond in " + language + ". " +
+                  "Use the following user-provided personal/business context only when relevant: " +
+                  (business || "No additional context was provided.") +
+                  ". Do not claim you made phone calls, sent messages, or completed actions outside this chat. " +
+                  "If you do not know a fact, say so rather than inventing it."
+              },
+              { role: "user", content: body.message.slice(0, 4000) }
+            ],
+            temperature: 0.6,
+            max_tokens: 700
+          })
+        });
 
         const data = await response.json().catch(() => ({}));
-
         if (!response.ok) {
           return json({
             error: "Groq API request failed",
@@ -83,10 +83,7 @@ export default {
           provider: "Groq"
         });
       } catch {
-        return json({
-          error: "Cannot connect to Groq API",
-          details: "Check network access and try again"
-        }, 502);
+        return json({ error: "Cannot connect to Groq API", details: "Check network access and try again" }, 502);
       }
     }
 
